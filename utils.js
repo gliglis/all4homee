@@ -159,7 +159,7 @@ const Utils = (function() {
             // Debounce resize events
             clearTimeout(window.resizeTimeout);
             window.resizeTimeout = setTimeout(() => {
-                Gallery.handleResize();
+               // Gallery.handleResize();
                 // Add other resize handlers here
             }, 250);
         });

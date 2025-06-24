@@ -13,6 +13,9 @@
 	<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
 	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 	
+	<!-- PhotoSwipe CSS -->
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/5.4.4/photoswipe.min.css">
+	
 	<!-- Google Fonts -->
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -122,7 +125,7 @@
 			</div>
 			<div class="row g-4">
 				<div class="col-md-6">
-					<div class="gallery-category" onclick="openGalleryLightbox('luxury-bathware');">
+					<div class="gallery-category" onclick="openPhotoSwipeGallery('luxury-bathware');">
 						<div class="gallery-category-icon">
 							<i class="fas fa-bath"></i>
 						</div>
@@ -134,7 +137,7 @@
 					</div>
 				</div>
 				<div class="col-md-6">
-					<div class="gallery-category" onclick="openGalleryLightbox('premium-tiles');">
+					<div class="gallery-category" onclick="openPhotoSwipeGallery('premium-tiles');">
 						<div class="gallery-category-icon">
 							<i class="fas fa-th-large"></i>
 						</div>
@@ -146,56 +149,29 @@
 					</div>
 				</div>
 			</div>
+
+			<!-- PhotoSwipe Gallery Grids - Hidden by default -->
+			<div id="luxury-bathware-gallery" class="photoswipe-gallery" style="display: none;">
+				<div class="gallery-header">
+					<h3 class="cinzel-decorative">Luxury Bathware Collection</h3>
+					<button class="gallery-close-btn" onclick="closePhotoSwipeGallery('luxury-bathware')">&times;</button>
+				</div>
+				<div class="gallery-grid" id="luxury-bathware-grid">
+					<!-- Images will be populated by JavaScript -->
+				</div>
+			</div>
+
+			<div id="premium-tiles-gallery" class="photoswipe-gallery" style="display: none;">
+				<div class="gallery-header">
+					<h3 class="cinzel-decorative">Premium, Porcelain, Marbles And Ceramic</h3>
+					<button class="gallery-close-btn" onclick="closePhotoSwipeGallery('premium-tiles')">&times;</button>
+				</div>
+				<div class="gallery-grid" id="premium-tiles-grid">
+					<!-- Images will be populated by JavaScript -->
+				</div>
+			</div>
 		</div>
 	</section>
-
-	<!-- Lightbox Modals -->
-	<div id="luxury-bathware-modal" class="lightbox-modal">
-		<div class="lightbox-content">
-			<div class="lightbox-header">
-				<h3 class="cinzel-decorative">Luxury Bathware Collection</h3>
-				<button class="lightbox-close" onclick="closeGalleryLightbox('luxury-bathware')">&times;</button>
-			</div>
-			<div class="lightbox-gallery" id="luxury-bathware-gallery">
-				<!-- Luxury Bathware Images -->
-			</div>
-		</div>
-	</div>
-
-	<div id="premium-tiles-modal" class="lightbox-modal">
-		<div class="lightbox-content">
-			<div class="lightbox-header">
-				<h3 class="cinzel-decorative">Premium, Porcelain, Marbles And Ceramic</h3>
-				<button class="lightbox-close" onclick="closeGalleryLightbox('premium-tiles')">&times;</button>
-			</div>
-			<div class="lightbox-gallery" id="premium-tiles-gallery">
-				<!-- Premium Tiles Images -->
-			</div>
-		</div>
-	</div>
-
-	<!-- Image Zoom Modal -->
-	<div id="image-zoom-modal" class="image-zoom-modal">
-		<div class="image-zoom-content">
-			<button class="image-zoom-close" onclick="closeImageZoom()">&times;</button>
-			
-			<div class="image-zoom-main">
-				<button class="image-zoom-nav image-zoom-prev" onclick="previousImage()">
-					<i class="fas fa-chevron-left"></i>
-				</button>
-				<img id="zoomed-image" src="" alt="">
-				<button class="image-zoom-nav image-zoom-next" onclick="nextImage()">
-					<i class="fas fa-chevron-right"></i>
-				</button>
-			</div>
-			
-			<div class="image-zoom-title" id="zoomed-title"></div>
-			
-			<div class="image-zoom-thumbnails" id="thumbnails-container">
-				<!-- Thumbnails will be populated by JavaScript -->
-			</div>
-		</div>
-	</div>
 
 	<!-- Our Sales Team Section -->
 	<section id="sales-team" class="section">
@@ -387,9 +363,36 @@
 
 	<!-- Scripts -->
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-	<script src="gallery.js"></script>
-<script src="ui-effects.js"></script>
-<script src="utils.js"></script>
-<script src="main.js"></script> <!-- Musi być ostatni -->
+	<!-- PhotoSwipe JS -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/5.4.4/umd/photoswipe.umd.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/photoswipe/5.4.4/umd/photoswipe-lightbox.umd.min.js"></script>
+	
+	<!-- STARE PLIKI - WYŁĄCZONE -->
+	<!-- <script src="gallery.js"></script> -->
+	<!-- <script src="ui-effects.js"></script> -->
+	<!-- <script src="utils.js"></script> -->
+	<!-- <script src="main.js"></script> -->
+	
+	<!-- NOWE PLIKI PHOTOSWIPE -->
+	<script src="photoswipe-gallery.js"></script>
+	<script src="ui-effects.js"></script>
+	<script src="utils.js"></script>
+	<script>
+		// Inicjalizacja po załadowaniu DOM
+		document.addEventListener('DOMContentLoaded', function() {
+			// Inicjalizuj UI Effects (background slider, smooth scrolling, navbar)
+			if (typeof UIEffects !== 'undefined') {
+				UIEffects.init();
+			}
+			
+			// Inicjalizuj Utils (form handling, notifications, event listeners)
+			if (typeof Utils !== 'undefined') {
+				Utils.init();
+			}
+			
+			// PhotoSwipe Gallery inicjalizuje się automatycznie w swoim pliku
+			console.log('Wszystkie moduły zainicjalizowane');
+		});
+	</script>
 </body>
 </html>
