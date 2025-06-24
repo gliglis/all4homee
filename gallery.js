@@ -2,6 +2,12 @@ function closeGalleryLightbox(category) {
         const modal = document.getElementById(category + '-modal');
         modal.style.display = 'none';
         document.body.style.overflow = 'auto';
+        
+        // Clear gallery content to prevent stale images
+        const gallery = document.getElementById(category + '-gallery');
+        if (gallery) {
+            gallery.innerHTML = '';
+        }
     }// Gallery Module
 const Gallery = (function() {
     // Gallery image arrays
@@ -112,9 +118,10 @@ const Gallery = (function() {
                 item.classList.add('image-loaded');
             }, 50);
             
-            // Add click event when image is loaded
+            // Add click event when image is loaded - pass clean image name
             item.addEventListener('click', function() {
-                openImageZoom(img.src, imageName.replace(/\.(jpg|png|jpeg)$/i, ''));
+                const cleanImageName = imageName.replace(/\.(jpg|png|jpeg)$/i, '');
+                openImageZoom(img.src, cleanImageName);
             });
         };
         
@@ -132,6 +139,15 @@ const Gallery = (function() {
 
     // Image zoom functions
     function openImageZoom(imageSrc, imageTitle) {
+        // Clear previous image immediately
+        const zoomedImage = document.getElementById('zoomed-image');
+        const zoomedTitle = document.getElementById('zoomed-title');
+        
+        // Reset image state immediately
+        zoomedImage.src = '';
+        zoomedImage.style.opacity = '0';
+        zoomedTitle.textContent = 'Loading...';
+        
         // Find current image index and set up array
         const category = imageSrc.includes('luxury_bathware') ? 'luxury-bathware' : 'premium-tiles';
         currentImageArray = category === 'luxury-bathware' ? luxuryBathwareImages : premiumTilesImages;
@@ -141,11 +157,29 @@ const Gallery = (function() {
         const fileName = imageSrc.split('/').pop();
         currentImageIndex = currentImageArray.findIndex(img => img === fileName);
         
-        // Show modal and update content
+        // Show modal immediately
         const modal = document.getElementById('image-zoom-modal');
         modal.style.display = 'block';
         document.body.style.overflow = 'hidden';
         
+        // Show loader immediately
+        const imageContainer = zoomedImage.parentElement;
+        let loader = imageContainer.querySelector('.zoom-loader');
+        
+        if (!loader) {
+            loader = document.createElement('div');
+            loader.className = 'zoom-loader';
+            loader.innerHTML = '<div class="spinner"></div>';
+            imageContainer.appendChild(loader);
+        }
+        
+        loader.style.display = 'flex';
+        
+        // Clear thumbnails container
+        const thumbnailsContainer = document.getElementById('thumbnails-container');
+        thumbnailsContainer.innerHTML = '';
+        
+        // Load the selected image and create thumbnails
         updateZoomedImage();
         createThumbnails();
     }
@@ -299,6 +333,10 @@ const Gallery = (function() {
 
     function nextImage() {
         if (currentImageArray.length > 0) {
+            // Clear current image immediately
+            const zoomedImage = document.getElementById('zoomed-image');
+            zoomedImage.style.opacity = '0.3';
+            
             currentImageIndex = (currentImageIndex + 1) % currentImageArray.length;
             updateZoomedImage();
         }
@@ -306,6 +344,10 @@ const Gallery = (function() {
 
     function previousImage() {
         if (currentImageArray.length > 0) {
+            // Clear current image immediately  
+            const zoomedImage = document.getElementById('zoomed-image');
+            zoomedImage.style.opacity = '0.3';
+            
             currentImageIndex = (currentImageIndex - 1 + currentImageArray.length) % currentImageArray.length;
             updateZoomedImage();
         }
@@ -315,6 +357,29 @@ const Gallery = (function() {
         const modal = document.getElementById('image-zoom-modal');
         modal.style.display = 'none';
         document.body.style.overflow = 'auto';
+        
+        // Clear image data to prevent showing old images
+        const zoomedImage = document.getElementById('zoomed-image');
+        const zoomedTitle = document.getElementById('zoomed-title');
+        const thumbnailsContainer = document.getElementById('thumbnails-container');
+        
+        // Reset everything
+        zoomedImage.src = '';
+        zoomedImage.style.opacity = '0';
+        zoomedTitle.textContent = '';
+        thumbnailsContainer.innerHTML = '';
+        
+        // Hide any loaders
+        const imageContainer = zoomedImage.parentElement;
+        const loader = imageContainer.querySelector('.zoom-loader');
+        if (loader) {
+            loader.style.display = 'none';
+        }
+        
+        // Reset global variables
+        currentImageIndex = 0;
+        currentImageArray = [];
+        currentImageFolder = '';
     }
 
     function handleResize() {
