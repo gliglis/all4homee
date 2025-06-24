@@ -1,14 +1,4 @@
-function closeGalleryLightbox(category) {
-        const modal = document.getElementById(category + '-modal');
-        modal.style.display = 'none';
-        document.body.style.overflow = 'auto';
-        
-        // Clear gallery content to prevent stale images
-        const gallery = document.getElementById(category + '-gallery');
-        if (gallery) {
-            gallery.innerHTML = '';
-        }
-    }// Gallery Module
+// Gallery Module with Optimized Loading
 const Gallery = (function() {
     // Gallery image arrays
     const luxuryBathwareImages = [
@@ -39,256 +29,468 @@ const Gallery = (function() {
     'SAVAN-AC060316-E_GREY.jpg', 'SAVAN-AC060317-E_DK_GREY.jpg'
     ];
 
+    // ============ OPTIMIZATION FEATURES ============
+
+    // Image cache for loaded images
+    const imageCache = new Map();
+
+    // Loading queue management
+    let loadingQueue = [];
+    let currentlyLoading = 0;
+    const MAX_CONCURRENT_LOADS = 4; // Maximum simultaneous image loads
+
     // Gallery lightbox variables
     let currentImageIndex = 0;
     let currentImageArray = [];
     let currentImageFolder = '';
 
-    // Gallery Lightbox Functions
+    // ============ OPTIMIZED LOADING SYSTEM ============
+
+    // Get cache key for image
+    function getCacheKey(folder, imageName) {
+        return `${folder}/${imageName}`;
+    }
+
+    // Add image to loading queue
+    function queueImageLoad(item, img, placeholder, folder, imageName, priority = false) {
+        const loadTask = {
+            item,
+            img,
+            placeholder,
+            folder,
+            imageName,
+            priority
+        };
+
+        if (priority) {
+            loadingQueue.unshift(loadTask);
+        } else {
+            loadingQueue.push(loadTask);
+        }
+
+        processLoadingQueue();
+    }
+
+    // Process the loading queue
+    function processLoadingQueue() {
+        while (currentlyLoading < MAX_CONCURRENT_LOADS && loadingQueue.length > 0) {
+            const task = loadingQueue.shift();
+            currentlyLoading++;
+            loadImageForItem(task.img, task.placeholder, task.item, task.folder, task.imageName);
+        }
+    }
+
+    // Check if image is visible in viewport
+    function isElementVisible(element) {
+        const rect = element.getBoundingClientRect();
+        const windowHeight = window.innerHeight || document.documentElement.clientHeight;
+        const windowWidth = window.innerWidth || document.documentElement.clientWidth;
+
+        return (
+            rect.top < windowHeight &&
+            rect.bottom > 0 &&
+            rect.left < windowWidth &&
+            rect.right > 0
+        );
+    }
+
+    // ============ MAIN GALLERY FUNCTIONS ============
+
     function openGalleryLightbox(category) {
         const modal = document.getElementById(category + '-modal');
         const gallery = document.getElementById(category + '-gallery');
-        
+
         if (!modal || !gallery) {
             return;
         }
-        
+
         // Show modal immediately
         modal.style.display = 'block';
         document.body.style.overflow = 'hidden';
-        
+
         // Get images for the category
         const images = category === 'luxury-bathware' ? luxuryBathwareImages : premiumTilesImages;
         const folder = category === 'luxury-bathware' ? 'luxury_bathware' : 'premium_porcelain_marbles_and_ceramic';
-        
-        // Create gallery grid immediately with placeholders
-        createGalleryWithPlaceholders(images, folder, gallery);
+
+        // Create gallery grid with optimized loading
+        createOptimizedGallery(images, folder, gallery);
     }
 
-    function createGalleryWithPlaceholders(images, folder, gallery) {
-        // Clear and create grid immediately
+    function createOptimizedGallery(images, folder, gallery) {
+        // Clear gallery and reset queue
         gallery.innerHTML = '';
         gallery.className = 'lightbox-gallery';
-        
-        // Create all placeholders first - visible immediately
+        loadingQueue = [];
+        currentlyLoading = 0;
+
+        // Create all placeholders first
+        const galleryItems = [];
+
         images.forEach((imageName, index) => {
             const item = document.createElement('div');
             item.className = 'lightbox-item placeholder-active';
-            
-            // Placeholder with loader - visible immediately
+
+            // Placeholder with loader
             const placeholder = document.createElement('div');
             placeholder.className = 'image-placeholder loading';
             placeholder.innerHTML = `
                 <div class="spinner"></div>
                 <div class="loading-text">Loading...</div>
             `;
-            
+
             // Hidden image element
             const img = document.createElement('img');
             img.style.display = 'none';
             img.alt = imageName.replace(/\.(jpg|png|jpeg)$/i, '');
-            
+
             const title = document.createElement('div');
             title.className = 'lightbox-item-title';
             title.textContent = imageName.replace(/\.(jpg|png|jpeg)$/i, '');
-            
+
             item.appendChild(placeholder);
             item.appendChild(img);
             item.appendChild(title);
             gallery.appendChild(item);
-            
-            // Start loading image after placeholder is visible
-            setTimeout(() => {
-                loadImageForItem(img, placeholder, item, folder, imageName);
-            }, index * 50); // Stagger loading for smoother experience
+
+            galleryItems.push({
+                item,
+                img,
+                placeholder,
+                imageName,
+                index
+            });
         });
+
+        // Prioritize visible images, then queue the rest
+        setTimeout(() => {
+            // First, identify visible images
+            const visibleItems = [];
+            const hiddenItems = [];
+
+            galleryItems.forEach(galleryItem => {
+                if (isElementVisible(galleryItem.item)) {
+                    visibleItems.push(galleryItem);
+                } else {
+                    hiddenItems.push(galleryItem);
+                }
+            });
+
+            // Load visible images first (high priority)
+            visibleItems.forEach(galleryItem => {
+                queueImageLoad(
+                    galleryItem.item,
+                    galleryItem.img,
+                    galleryItem.placeholder,
+                    folder,
+                    galleryItem.imageName,
+                    true // high priority
+                );
+            });
+
+            // Then queue hidden images
+            hiddenItems.forEach(galleryItem => {
+                queueImageLoad(
+                    galleryItem.item,
+                    galleryItem.img,
+                    galleryItem.placeholder,
+                    folder,
+                    galleryItem.imageName,
+                    false // normal priority
+                );
+            });
+
+        }, 50);
     }
 
     function loadImageForItem(img, placeholder, item, folder, imageName) {
-        img.onload = function() {
-            // Hide placeholder, show image
-            placeholder.style.display = 'none';
-            img.style.display = 'block';
-            img.style.opacity = '0';
-            
-            // Fade in image
-            setTimeout(() => {
-                img.style.opacity = '1';
-                item.classList.remove('placeholder-active');
-                item.classList.add('image-loaded');
-            }, 50);
-            
-            // Add click event when image is loaded - pass clean image name
-            item.addEventListener('click', function() {
-                const cleanImageName = imageName.replace(/\.(jpg|png|jpeg)$/i, '');
-                openImageZoom(img.src, cleanImageName);
+        const cacheKey = getCacheKey(folder, imageName);
+
+        // Check if image is already in cache
+        if (imageCache.has(cacheKey)) {
+            const cachedSrc = imageCache.get(cacheKey);
+            img.src = cachedSrc;
+            showLoadedImage(img, placeholder, item, imageName);
+            currentlyLoading--;
+            processLoadingQueue(); // Continue with queue
+            return;
+        }
+
+        // Load image with error handling and retry
+        loadImageWithRetry(img, folder, imageName, 3)
+            .then(() => {
+                // Cache the loaded image
+                imageCache.set(cacheKey, img.src);
+                showLoadedImage(img, placeholder, item, imageName);
+            })
+            .catch(() => {
+                showImageError(placeholder);
+            })
+            .finally(() => {
+                currentlyLoading--;
+                processLoadingQueue(); // Continue with queue
             });
-        };
-        
-        img.onerror = function() {
-            placeholder.innerHTML = `
-                <i class="fas fa-exclamation-triangle"></i>
-                <div class="error-text">Failed to load</div>
-            `;
-            placeholder.classList.add('error');
-        };
-        
-        // Start loading
-        img.src = `./gallery/${folder}/${imageName}`;
     }
 
-    // Image zoom functions
+    // Load image with retry mechanism
+    function loadImageWithRetry(img, folder, imageName, maxRetries) {
+        return new Promise((resolve, reject) => {
+            let retries = 0;
+
+            function attemptLoad() {
+                const newImg = new Image();
+
+                newImg.onload = function() {
+                    img.src = this.src;
+                    resolve();
+                };
+
+                newImg.onerror = function() {
+                    retries++;
+                    if (retries < maxRetries) {
+                        // Exponential backoff: 500ms, 1s, 2s
+                        const delay = Math.pow(2, retries - 1) * 500;
+                        setTimeout(attemptLoad, delay);
+                    } else {
+                        reject();
+                    }
+                };
+
+                newImg.src = `./gallery/${folder}/${imageName}`;
+            }
+
+            attemptLoad();
+        });
+    }
+
+    // Show successfully loaded image
+    function showLoadedImage(img, placeholder, item, imageName) {
+        placeholder.style.display = 'none';
+        img.style.display = 'block';
+        img.style.opacity = '0';
+
+        // Fade in image
+        setTimeout(() => {
+            img.style.opacity = '1';
+            item.classList.remove('placeholder-active');
+            item.classList.add('image-loaded');
+        }, 50);
+
+        // Add click event when image is loaded
+        item.addEventListener('click', function() {
+            const cleanImageName = imageName.replace(/\.(jpg|png|jpeg)$/i, '');
+            openImageZoom(img.src, cleanImageName);
+        });
+    }
+
+    // Show image error
+    function showImageError(placeholder) {
+        placeholder.innerHTML = `
+            <i class="fas fa-exclamation-triangle"></i>
+            <div class="error-text">Failed to load</div>
+        `;
+        placeholder.classList.add('error');
+    }
+
+    // ============ IMAGE ZOOM FUNCTIONS (Optimized) ============
+
     function openImageZoom(imageSrc, imageTitle) {
         // Clear previous image immediately
         const zoomedImage = document.getElementById('zoomed-image');
         const zoomedTitle = document.getElementById('zoomed-title');
-        
+
         // Reset image state immediately
         zoomedImage.src = '';
         zoomedImage.style.opacity = '0';
         zoomedTitle.textContent = 'Loading...';
-        
+
         // Find current image index and set up array
         const category = imageSrc.includes('luxury_bathware') ? 'luxury-bathware' : 'premium-tiles';
         currentImageArray = category === 'luxury-bathware' ? luxuryBathwareImages : premiumTilesImages;
         currentImageFolder = category === 'luxury-bathware' ? 'luxury_bathware' : 'premium_porcelain_marbles_and_ceramic';
-        
+
         // Find current image index
         const fileName = imageSrc.split('/').pop();
         currentImageIndex = currentImageArray.findIndex(img => img === fileName);
-        
+
         // Show modal immediately
         const modal = document.getElementById('image-zoom-modal');
         modal.style.display = 'block';
         document.body.style.overflow = 'hidden';
-        
+
         // Show loader immediately
         const imageContainer = zoomedImage.parentElement;
         let loader = imageContainer.querySelector('.zoom-loader');
-        
+
         if (!loader) {
             loader = document.createElement('div');
             loader.className = 'zoom-loader';
             loader.innerHTML = '<div class="spinner"></div>';
             imageContainer.appendChild(loader);
         }
-        
+
         loader.style.display = 'flex';
-        
+
         // Clear thumbnails container
         const thumbnailsContainer = document.getElementById('thumbnails-container');
         thumbnailsContainer.innerHTML = '';
-        
+
         // Load the selected image and create thumbnails
         updateZoomedImage();
         createThumbnails();
+
+        // Preload next and previous images
+        preloadAdjacentImages();
+    }
+
+    // Preload next and previous images for smooth navigation
+    function preloadAdjacentImages() {
+        const preloadIndexes = [
+            (currentImageIndex - 1 + currentImageArray.length) % currentImageArray.length,
+            (currentImageIndex + 1) % currentImageArray.length
+        ];
+
+        preloadIndexes.forEach(index => {
+            const imageName = currentImageArray[index];
+            const cacheKey = getCacheKey(currentImageFolder, imageName);
+
+            if (!imageCache.has(cacheKey)) {
+                const img = new Image();
+                img.onload = () => {
+                    imageCache.set(cacheKey, img.src);
+                };
+                img.src = `./gallery/${currentImageFolder}/${imageName}`;
+            }
+        });
     }
 
     function updateZoomedImage() {
         const zoomedImage = document.getElementById('zoomed-image');
         const zoomedTitle = document.getElementById('zoomed-title');
         const currentImage = currentImageArray[currentImageIndex];
-        
+        const cacheKey = getCacheKey(currentImageFolder, currentImage);
+
         // Show loading state for zoom
         const imageContainer = zoomedImage.parentElement;
         let loader = imageContainer.querySelector('.zoom-loader');
-        
+
         if (!loader) {
             loader = document.createElement('div');
             loader.className = 'zoom-loader';
             loader.innerHTML = '<div class="spinner"></div>';
             imageContainer.appendChild(loader);
         }
-        
+
         loader.style.display = 'flex';
         zoomedImage.style.opacity = '0.3';
-        
-        // Create new image to get natural dimensions and preload
+
+        // Check cache first
+        if (imageCache.has(cacheKey)) {
+            // Use cached image
+            const cachedSrc = imageCache.get(cacheKey);
+            showZoomedImage(zoomedImage, zoomedTitle, cachedSrc, currentImage, loader);
+        } else {
+            // Load new image
+            const tempImg = new Image();
+            tempImg.onload = function() {
+                // Cache the image
+                imageCache.set(cacheKey, this.src);
+                showZoomedImage(zoomedImage, zoomedTitle, this.src, currentImage, loader);
+            };
+
+            tempImg.onerror = function() {
+                loader.style.display = 'none';
+                zoomedImage.style.opacity = '1';
+                zoomedTitle.textContent = 'Failed to load image';
+            };
+
+            tempImg.src = `./gallery/${currentImageFolder}/${currentImage}`;
+        }
+
+        // Update active thumbnail
+        updateActiveThumbnail();
+
+        // Preload adjacent images
+        preloadAdjacentImages();
+    }
+
+    function showZoomedImage(zoomedImage, zoomedTitle, src, imageName, loader) {
+        // Set the source and title
+        zoomedImage.src = src;
+        zoomedTitle.textContent = imageName.replace(/\.(jpg|png|jpeg)$/i, '');
+
+        // Calculate optimal dimensions
         const tempImg = new Image();
         tempImg.onload = function() {
-            // Set the source
-            zoomedImage.src = `./gallery/${currentImageFolder}/${currentImage}`;
-            zoomedTitle.textContent = currentImage.replace(/\.(jpg|png|jpeg)$/i, '');
-            
-            // Calculate optimal dimensions based on viewport and image aspect ratio
             const viewportWidth = window.innerWidth;
             const viewportHeight = window.innerHeight;
-            const imageAspectRatio = tempImg.naturalWidth / tempImg.naturalHeight;
-            
-            // Calculate maximum dimensions (leaving space for controls and thumbnails)
+            const imageAspectRatio = this.naturalWidth / this.naturalHeight;
+
             const maxWidth = viewportWidth * 0.9;
             const maxHeight = viewportHeight * 0.7;
             const maxAspectRatio = maxWidth / maxHeight;
-            
+
             let finalWidth, finalHeight;
-            
+
             if (imageAspectRatio > maxAspectRatio) {
-                // Image is wider - limit by width
-                finalWidth = Math.min(maxWidth, tempImg.naturalWidth);
+                finalWidth = Math.min(maxWidth, this.naturalWidth);
                 finalHeight = finalWidth / imageAspectRatio;
             } else {
-                // Image is taller - limit by height
-                finalHeight = Math.min(maxHeight, tempImg.naturalHeight);
+                finalHeight = Math.min(maxHeight, this.naturalHeight);
                 finalWidth = finalHeight * imageAspectRatio;
             }
-            
-            // Apply calculated dimensions
+
             zoomedImage.style.width = finalWidth + 'px';
             zoomedImage.style.height = finalHeight + 'px';
             zoomedImage.style.maxWidth = 'none';
             zoomedImage.style.maxHeight = 'none';
-            
+
             // Hide loader and show image
             setTimeout(() => {
                 loader.style.display = 'none';
                 zoomedImage.style.opacity = '1';
             }, 100);
         };
-        
-        tempImg.onerror = function() {
-            loader.style.display = 'none';
-            zoomedImage.style.opacity = '1';
-            zoomedTitle.textContent = 'Failed to load image';
-        };
-        
-        tempImg.src = `./gallery/${currentImageFolder}/${currentImage}`;
-        
-        // Update active thumbnail
-        updateActiveThumbnail();
+        tempImg.src = src;
     }
 
     function createThumbnails() {
         const container = document.getElementById('thumbnails-container');
         container.innerHTML = '';
-        
+
         currentImageArray.forEach((imageName, index) => {
             const thumbnailDiv = document.createElement('div');
             thumbnailDiv.className = 'thumbnail-item';
             if (index === currentImageIndex) {
                 thumbnailDiv.classList.add('active');
             }
-            
+
             const img = document.createElement('img');
-            img.src = `./gallery/${currentImageFolder}/${imageName}`;
+            const cacheKey = getCacheKey(currentImageFolder, imageName);
+
+            // Use cached image if available
+            if (imageCache.has(cacheKey)) {
+                img.src = imageCache.get(cacheKey);
+            } else {
+                img.src = `./gallery/${currentImageFolder}/${imageName}`;
+                img.loading = 'lazy';
+            }
+
             img.alt = imageName.replace(/\.(jpg|png|jpeg)$/i, '');
-            img.loading = 'lazy';
-            
-            // Error handling for images
+
             img.onerror = function() {
                 this.style.display = 'none';
                 thumbnailDiv.style.display = 'none';
             };
-            
+
             thumbnailDiv.appendChild(img);
             thumbnailDiv.addEventListener('click', () => {
                 currentImageIndex = index;
                 updateZoomedImage();
             });
-            
+
             container.appendChild(thumbnailDiv);
         });
-        
-        // Scroll active thumbnail into view after a short delay
+
         setTimeout(() => {
             scrollToActiveThumbnail();
         }, 100);
@@ -297,22 +499,20 @@ const Gallery = (function() {
     function scrollToActiveThumbnail() {
         const container = document.getElementById('thumbnails-container');
         const activeThumbnail = container.querySelector('.thumbnail-item.active');
-        
+
         if (activeThumbnail && container) {
             const containerRect = container.getBoundingClientRect();
             const thumbnailRect = activeThumbnail.getBoundingClientRect();
-            
-            // Calculate if thumbnail is visible
-            const isVisible = thumbnailRect.left >= containerRect.left && 
+
+            const isVisible = thumbnailRect.left >= containerRect.left &&
                              thumbnailRect.right <= containerRect.right;
-            
+
             if (!isVisible) {
-                // Calculate scroll position to center the thumbnail
                 const containerWidth = container.clientWidth;
                 const thumbnailLeft = activeThumbnail.offsetLeft;
                 const thumbnailWidth = activeThumbnail.offsetWidth;
                 const scrollLeft = thumbnailLeft - (containerWidth / 2) + (thumbnailWidth / 2);
-                
+
                 container.scrollTo({
                     left: scrollLeft,
                     behavior: 'smooth'
@@ -326,17 +526,15 @@ const Gallery = (function() {
         thumbnails.forEach((thumb, index) => {
             thumb.classList.toggle('active', index === currentImageIndex);
         });
-        
-        // Scroll active thumbnail into view
+
         scrollToActiveThumbnail();
     }
 
     function nextImage() {
         if (currentImageArray.length > 0) {
-            // Clear current image immediately
             const zoomedImage = document.getElementById('zoomed-image');
             zoomedImage.style.opacity = '0.3';
-            
+
             currentImageIndex = (currentImageIndex + 1) % currentImageArray.length;
             updateZoomedImage();
         }
@@ -344,10 +542,9 @@ const Gallery = (function() {
 
     function previousImage() {
         if (currentImageArray.length > 0) {
-            // Clear current image immediately  
             const zoomedImage = document.getElementById('zoomed-image');
             zoomedImage.style.opacity = '0.3';
-            
+
             currentImageIndex = (currentImageIndex - 1 + currentImageArray.length) % currentImageArray.length;
             updateZoomedImage();
         }
@@ -357,40 +554,51 @@ const Gallery = (function() {
         const modal = document.getElementById('image-zoom-modal');
         modal.style.display = 'none';
         document.body.style.overflow = 'auto';
-        
-        // Clear image data to prevent showing old images
+
         const zoomedImage = document.getElementById('zoomed-image');
         const zoomedTitle = document.getElementById('zoomed-title');
         const thumbnailsContainer = document.getElementById('thumbnails-container');
-        
-        // Reset everything
+
         zoomedImage.src = '';
         zoomedImage.style.opacity = '0';
         zoomedTitle.textContent = '';
         thumbnailsContainer.innerHTML = '';
-        
-        // Hide any loaders
+
         const imageContainer = zoomedImage.parentElement;
         const loader = imageContainer.querySelector('.zoom-loader');
         if (loader) {
             loader.style.display = 'none';
         }
-        
-        // Reset global variables
+
         currentImageIndex = 0;
         currentImageArray = [];
         currentImageFolder = '';
     }
 
+    function closeGalleryLightbox(category) {
+        const modal = document.getElementById(category + '-modal');
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+
+        // Clear gallery content to prevent stale images
+        const gallery = document.getElementById(category + '-gallery');
+        if (gallery) {
+            gallery.innerHTML = '';
+        }
+
+        // Clear loading queue
+        loadingQueue = [];
+        currentlyLoading = 0;
+    }
+
     function handleResize() {
         const modal = document.getElementById('image-zoom-modal');
         if (modal && modal.style.display === 'block') {
-            // Recalculate image size on window resize
             setTimeout(updateZoomedImage, 100);
         }
     }
 
-    // Public API
+    // ============ PUBLIC API ============
     return {
         openGalleryLightbox,
         closeGalleryLightbox,
@@ -398,9 +606,15 @@ const Gallery = (function() {
         previousImage,
         closeImageZoom,
         handleResize,
+
+        // Debug methods
+        getCacheSize: () => imageCache.size,
+        clearCache: () => imageCache.clear(),
+        getQueueLength: () => loadingQueue.length,
+
         init: function() {
-            // Gallery-specific initialization if needed
-            console.log('Gallery module initialized');
+            console.log('Optimized Gallery module initialized');
+            console.log(`Max concurrent loads: ${MAX_CONCURRENT_LOADS}`);
         }
     };
 })();
