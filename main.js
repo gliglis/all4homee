@@ -1,258 +1,840 @@
-// Main Application Initializer
-const App = (function() {
-    
-    // Application configuration
-    const config = {
-        version: '1.0.0',
-        debug: false, // Set to true for development
-        modules: ['Gallery', 'UIEffects', 'Utils'],
-        features: {
-            gallery: true,
-            backgroundSlider: true,
-            smoothScrolling: true,
-            navbarEffects: true,
-            formHandling: true,
-            notifications: true,
-            keyboardNavigation: true
-        }
-    };
-
-    // Module dependency checker
-    function checkDependencies() {
-        const missing = [];
-        
-        config.modules.forEach(module => {
-            if (typeof window[module] === 'undefined') {
-                missing.push(module);
-            }
-        });
-        
-        if (missing.length > 0) {
-            console.error('Missing required modules:', missing);
-            return false;
-        }
-        
-        return true;
-    }
-
-    // Initialize all modules
-    function initializeModules() {
-        const startTime = performance.now();
-        
-        try {
-            // Initialize in specific order for dependencies
-            if (config.features.gallery && window.Gallery) {
-                Gallery.init();
-                log('Gallery module initialized');
-            }
-            
-            if (config.features.backgroundSlider || config.features.smoothScrolling || config.features.navbarEffects) {
-                if (window.UIEffects) {
-                    UIEffects.init();
-                    log('UI Effects module initialized');
-                }
-            }
-            
-            if (config.features.formHandling || config.features.notifications || config.features.keyboardNavigation) {
-                if (window.Utils) {
-                    Utils.init();
-                    log('Utils module initialized');
-                }
-            }
-            
-            const endTime = performance.now();
-            log(`All modules initialized in ${(endTime - startTime).toFixed(2)}ms`);
-            
-            return true;
-            
-        } catch (error) {
-            console.error('Error initializing modules:', error);
-            return false;
-        }
-    }
-
-    // Setup global error handling
-    function setupErrorHandling() {
-        window.addEventListener('error', function(event) {
-            console.error('Global error:', event.error);
-            
-            // Show user-friendly message for critical errors
-            if (window.Utils && Utils.showNotification) {
-                Utils.showNotification('Something went wrong. Please refresh the page.', 'error');
-            }
-        });
-
-        window.addEventListener('unhandledrejection', function(event) {
-            console.error('Unhandled promise rejection:', event.reason);
-        });
-    }
-
-    // Performance monitoring
-    function setupPerformanceMonitoring() {
-        // Monitor page load performance
-        window.addEventListener('load', function() {
-            setTimeout(() => {
-                const perfData = performance.getEntriesByType('navigation')[0];
-                log(`Page loaded in ${perfData.loadEventEnd - perfData.fetchStart}ms`);
-                
-                // Monitor largest contentful paint
-                if ('LargestContentfulPaint' in window) {
-                    new PerformanceObserver((list) => {
-                        const entries = list.getEntries();
-                        const lastEntry = entries[entries.length - 1];
-                        log(`LCP: ${lastEntry.startTime}ms`);
-                    }).observe({ entryTypes: ['largest-contentful-paint'] });
-                }
-            }, 0);
-        });
-    }
-
-    // Feature detection
-    function detectFeatures() {
-        const features = {
-            webp: false,
-            intersectionObserver: 'IntersectionObserver' in window,
-            resizeObserver: 'ResizeObserver' in window,
-            localStorage: (function() {
-                try {
-                    localStorage.setItem('test', 'test');
-                    localStorage.removeItem('test');
-                    return true;
-                } catch (e) {
-                    return false;
-                }
-            })(),
-            touch: 'ontouchstart' in window || navigator.maxTouchPoints > 0
-        };
-
-        // Test WebP support
-        const webpTest = new Image();
-        webpTest.onload = webpTest.onerror = function() {
-            features.webp = (webpTest.height === 2);
-            log('WebP support:', features.webp);
-        };
-        webpTest.src = 'data:image/webp;base64,UklGRjoAAABXRUJQVlA4IC4AAACyAgCdASoCAAIALmk0mk0iIiIiIgBoSygABc6WWgAA/veff/0PP8bA//LwYAAA';
-
-        log('Feature detection:', features);
-        return features;
-    }
-
-    // Console logging with debug mode
-    function log(...args) {
-        if (config.debug) {
-            console.log('[App]', ...args);
-        }
-    }
-
-    // Application health check
-    function healthCheck() {
-        const checks = {
-            modules: checkDependencies(),
-            dom: document.readyState === 'complete',
-            viewport: window.innerWidth > 0 && window.innerHeight > 0
-        };
-        
-        const healthy = Object.values(checks).every(check => check === true);
-        
-        log('Health check:', checks, 'Healthy:', healthy);
-        return healthy;
-    }
-
-    // Initialize application
-    function init() {
-        log(`Initializing Newbridge Tile & Bath Wares App v${config.version}`);
-        
-        // Check if DOM is ready
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', init);
-            return;
-        }
-        
-        // Setup error handling first
-        setupErrorHandling();
-        
-        // Feature detection
-        const features = detectFeatures();
-        
-        // Health check
-        if (!healthCheck()) {
-            console.error('Application health check failed');
-            return;
-        }
-        
-        // Performance monitoring
-        if (config.debug) {
-            setupPerformanceMonitoring();
-        }
-        
-        // Initialize modules
-        const success = initializeModules();
-        
-        if (success) {
-            log('Application initialized successfully');
-            
-            // Dispatch custom event for other scripts
-            document.dispatchEvent(new CustomEvent('appInitialized', {
-                detail: { 
-                    version: config.version,
-                    features: features,
-                    timestamp: Date.now()
-                }
-            }));
-            
-            // Show ready notification in debug mode
-            if (config.debug && window.Utils && Utils.showNotification) {
-                Utils.showNotification('Application loaded successfully!', 'success');
-            }
-            
-        } else {
-            console.error('Application initialization failed');
-        }
-    }
-
-    // Public API
-    return {
-        init,
-        config,
-        log,
-        healthCheck,
-        version: config.version,
-        
-        // Allow runtime configuration updates
-        updateConfig: function(newConfig) {
-            Object.assign(config, newConfig);
-            log('Configuration updated:', config);
-        },
-        
-        // Get application state
-        getState: function() {
-            return {
-                version: config.version,
-                modules: config.modules,
-                features: config.features,
-                healthy: healthCheck()
-            };
-        }
-    };
-})();
-
-// Auto-initialize when script loads
-App.init();
-
-// Global access for debugging
-if (App.config.debug) {
-    window.App = App;
+/* Lightbox Modal *//* Cinzel Decorative Font Classes */
+.cinzel-decorative {
+    font-family: 'Cinzel Decorative', serif;
 }
 
-// Service Worker registration (if available)
-if ('serviceWorker' in navigator && location.protocol === 'https:') {
-    window.addEventListener('load', function() {
-        navigator.serviceWorker.register('/sw.js')
-            .then(function(registration) {
-                App.log('ServiceWorker registered successfully');
-            })
-            .catch(function(error) {
-                App.log('ServiceWorker registration failed');
-            });
-    });
+.cinzel-regular {
+    font-family: 'Cinzel Decorative', serif;
+    font-weight: 400;
+}
+
+.cinzel-bold {
+    font-family: 'Cinzel Decorative', serif;
+    font-weight: 700;
+}
+
+.cinzel-black {
+    font-family: 'Cinzel Decorative', serif;
+    font-weight: 900;
+}
+
+/* Base Styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+}
+
+/* Navigation */
+.navbar {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.navbar-brand {
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+
+.navbar-nav .nav-link {
+    color: rgba(255,255,255,0.9) !important;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.navbar-nav .nav-link:hover {
+    color: #fff !important;
+}
+
+/* Mobile responsive navbar brand */
+@media (max-width: 768px) {
+    .navbar-brand {
+        font-size: 1.1rem;
+        line-height: 1.2;
+        white-space: normal;
+        text-align: left;
+    }
+    
+    .navbar-brand .brand-line {
+        display: block;
+    }
+}
+
+@media (min-width: 769px) {
+    .navbar-brand .brand-line {
+        display: inline;
+    }
+}
+
+/* Header */
+#header {
+    height: 100vh;
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: center;
+    text-align: center;
+    color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+#header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6));
+    z-index: 5;
+}
+
+.background-slider {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+}
+
+.background-slider img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 2s ease-in-out;
+}
+
+.background-slider img.active {
+    opacity: 1;
+}
+
+.header-content {
+    width: 100%;
+    z-index: 10;
+    position: relative;
+}
+
+.header-content h1 {
+    font-size: 3.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+.header-content p {
+    font-size: 1.3rem;
+    margin-bottom: 2rem;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+
+/* Buttons */
+.btn-primary-custom {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    padding: 12px 30px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 50px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.btn-primary-custom:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+}
+
+/* Sections */
+.section {
+    padding: 80px 0;
+}
+
+.section-title {
+    text-align: center;
+    margin-bottom: 4rem;
+}
+
+.section-title h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 1rem;
+}
+
+.section-title p {
+    font-size: 1.1rem;
+    color: #666;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* Feature Boxes */
+.feature-box {
+    text-align: center;
+    padding: 2rem;
+    border-radius: 15px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    height: 100%;
+}
+
+.feature-box:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+}
+
+.feature-box i {
+    font-size: 3rem;
+    color: #667eea;
+    margin-bottom: 1.5rem;
+}
+
+.feature-box h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+/* Gallery Categories */
+.gallery-category {
+    background: white;
+    border-radius: 15px;
+    padding: 2rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    cursor: pointer;
+    height: 100%;
+}
+
+.gallery-category:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+}
+
+.gallery-category-icon {
+    font-size: 4rem;
+    color: #667eea;
+    margin-bottom: 1.5rem;
+}
+
+.gallery-category h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+/* Loading Animations */
+.loader {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+}
+
+.placeholder-loader {
+    width: 30px;
+    height: 30px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.gallery-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    text-align: center;
+    color: #666;
+}
+
+.gallery-loading p {
+    margin: 1rem 0 0.5rem;
+    font-size: 1.1rem;
+}
+
+.progress-bar {
+    width: 200px;
+    height: 4px;
+    background: #e9ecef;
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 1rem;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 2px;
+    transition: width 0.3s ease;
+}
+
+.lightbox-gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.5rem;
+    padding: 2rem;
+    background: white;
+    border-radius: 0 0 15px 15px;
+}
+
+.lightbox-gallery-grid.fade-in {
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Loading states for gallery items */
+.lightbox-item.loading {
+    position: relative;
+}
+
+.lightbox-item.loading .image-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8f9fa;
+    border-radius: 10px;
+}
+
+.lightbox-item.loading img {
+    opacity: 0;
+}
+
+.lightbox-item.loaded img {
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+.lightbox-item.error .image-placeholder {
+    background: #ffe6e6;
+    color: #dc3545;
+}
+
+/* Zoom loader */
+.zoom-loader {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.8);
+    border-radius: 10px;
+    padding: 20px;
+    z-index: 100002;
+}
+
+.zoom-loader .loader {
+    border-color: #f3f3f3;
+    border-top-color: #667eea;
+}
+.lightbox-modal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.9);
+}
+
+.lightbox-content {
+    position: relative;
+    margin: auto;
+    padding: 0;
+    width: 90%;
+    max-width: 1200px;
+    height: 90%;
+    overflow-y: auto;
+    margin-top: 5%;
+}
+
+.lightbox-header {
+    background: white;
+    padding: 1rem 2rem;
+    border-radius: 15px 15px 0 0;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.lightbox-header h3 {
+    margin: 0;
+    color: #333;
+}
+
+.lightbox-close {
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    border: none;
+    background: none;
+}
+
+.lightbox-close:hover {
+    color: #000;
+}
+
+.lightbox-gallery {
+    background: white;
+    padding: 2rem;
+    border-radius: 0 0 15px 15px;
+    position: relative;
+}
+
+.lightbox-item {
+    position: relative;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+    cursor: pointer;
+}
+
+.lightbox-item:hover img {
+    transform: scale(1.08);
+}
+
+.lightbox-item img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.lightbox-item-title {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(transparent, rgba(0,0,0,0.8));
+    color: white;
+    padding: 1rem 0.5rem 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-align: center;
+}
+
+/* Image Zoom Modal */
+.image-zoom-modal {
+    display: none;
+    position: fixed;
+    z-index: 99999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.95);
+}
+
+.image-zoom-content {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.image-zoom-main {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    padding: 70px 20px 20px;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.image-zoom-main img {
+    width: auto;
+    height: auto;
+    max-width: 90vw;
+    max-height: 70vh;
+    object-fit: contain;
+    border-radius: 10px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    display: block;
+    transition: all 0.3s ease;
+}
+
+.image-zoom-close {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    color: white;
+    font-size: 40px;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 100001;
+    background: rgba(0,0,0,0.7);
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    transition: background 0.3s ease;
+}
+
+.image-zoom-close:hover {
+    background: rgba(0,0,0,0.9);
+}
+
+.image-zoom-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    color: white;
+    font-size: 24px;
+    background: rgba(0,0,0,0.7);
+    border: none;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 100000;
+}
+
+.image-zoom-nav:hover {
+    background: rgba(0,0,0,0.9);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.image-zoom-prev {
+    left: 15px;
+}
+
+.image-zoom-next {
+    right: 15px;
+}
+
+.image-zoom-title {
+    text-align: center;
+    color: white;
+    padding: 15px 20px;
+    font-size: 1.1rem;
+    font-weight: 500;
+    background: rgba(0,0,0,0.8);
+    border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.image-zoom-thumbnails {
+    background: rgba(0,0,0,0.9);
+    padding: 20px 15px;
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    justify-content: flex-start;
+    min-height: 100px;
+    align-items: center;
+}
+
+.image-zoom-thumbnails::-webkit-scrollbar {
+    height: 8px;
+}
+
+.image-zoom-thumbnails::-webkit-scrollbar-track {
+    background: rgba(255,255,255,0.1);
+    border-radius: 4px;
+}
+
+.image-zoom-thumbnails::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.4);
+    border-radius: 4px;
+}
+
+.image-zoom-thumbnails::-webkit-scrollbar-thumb:hover {
+    background: rgba(255,255,255,0.6);
+}
+
+.thumbnail-item {
+    flex-shrink: 0;
+    width: 70px;
+    height: 70px;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 3px solid transparent;
+    background: #333;
+}
+
+.thumbnail-item:hover {
+    transform: scale(1.1);
+    border-color: rgba(255,255,255,0.6);
+}
+
+.thumbnail-item.active {
+    border-color: #667eea;
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(102, 126, 234, 0.5);
+}
+
+.thumbnail-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Gallery Items */
+.gallery-item {
+    position: relative;
+    overflow: hidden;
+    border-radius: 15px;
+    margin-bottom: 2rem;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.gallery-item:hover {
+    transform: scale(1.02);
+}
+
+.gallery-item img {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.gallery-item:hover img {
+    transform: scale(1.1);
+}
+
+.gallery-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, rgba(102, 126, 234, 0.8), rgba(118, 75, 162, 0.8));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.gallery-item:hover .gallery-overlay {
+    opacity: 1;
+}
+
+/* Video Section */
+.video-container {
+    position: relative;
+    width: 100%;
+    height: 300px;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.video-container:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+}
+
+.video-container video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.video-title {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.9), rgba(118, 75, 162, 0.9));
+    color: white;
+    padding: 1rem;
+    margin-top: -5px;
+    border-radius: 0 0 15px 15px;
+    text-align: center;
+    font-weight: 600;
+}
+
+/* Download Cards */
+.download-card {
+    background: #f8f9fa;
+    border: 2px solid #e9ecef;
+    border-radius: 15px;
+    padding: 2rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.download-card:hover {
+    border-color: #667eea;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.1);
+}
+
+.download-card i {
+    font-size: 3rem;
+    color: #dc3545;
+    margin-bottom: 1rem;
+}
+
+.download-card h4 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+/* Contact Section */
+.contact-info {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 3rem;
+    border-radius: 15px;
+    height: 100%;
+}
+
+.contact-info h3 {
+    font-size: 1.8rem;
+    margin-bottom: 2rem;
+    font-weight: 600;
+}
+
+.contact-info .contact-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.contact-info .contact-item i {
+    font-size: 1.2rem;
+    margin-right: 1rem;
+    width: 20px;
+}
+
+.contact-form {
+    background: #f8f9fa;
+    padding: 3rem;
+    border-radius: 15px;
+}
+
+.form-control {
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    padding: 12px 15px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+/* Footer */
+.footer {
+    background: #333;
+    color: white;
+    text-align: center;
+    padding: 2rem 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .header-content h1 {
+        font-size: 2.5rem;
+    }
+    
+    .header-content p {
+        font-size: 1.1rem;
+    }
+    
+    .section {
+        padding: 50px 0;
+    }
+    
+    .section-title h2 {
+        font-size: 2rem;
+    }
+    
+    .image-zoom-main {
+        padding: 70px 10px 20px;
+    }
+    
+    .image-zoom-main img {
+        max-width: 95vw;
+        max-height: 60vh;
+    }
+    
+    .image-zoom-nav {
+        width: 45px;
+        height: 45px;
+        font-size: 20px;
+    }
+    
+    .image-zoom-prev {
+        left: 10px;
+    }
+    
+    .image-zoom-next {
+        right: 10px;
+    }
+    
+    .image-zoom-close {
+        top: 10px;
+        right: 10px;
+        width: 45px;
+        height: 45px;
+        font-size: 24px;
+    }
+    
+    .thumbnail-item {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .image-zoom-thumbnails {
+        padding: 15px 10px;
+        gap: 8px;
+        min-height: 80px;
+    }
+    
+    .image-zoom-title {
+        font-size: 1rem;
+        padding: 12px 15px;
+    }
 }

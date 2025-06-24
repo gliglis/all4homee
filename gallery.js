@@ -1,4 +1,8 @@
-// Gallery Module
+function closeGalleryLightbox(category) {
+        const modal = document.getElementById(category + '-modal');
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }// Gallery Module
 const Gallery = (function() {
     // Gallery image arrays
     const luxuryBathwareImages = [
@@ -43,45 +47,87 @@ const Gallery = (function() {
             return;
         }
         
-        // Clear existing content
-        gallery.innerHTML = '';
+        // Show modal immediately
+        modal.style.display = 'block';
+        document.body.style.overflow = 'hidden';
         
         // Get images for the category
         const images = category === 'luxury-bathware' ? luxuryBathwareImages : premiumTilesImages;
         const folder = category === 'luxury-bathware' ? 'luxury_bathware' : 'premium_porcelain_marbles_and_ceramic';
         
-        // Create gallery items
+        // Create gallery grid immediately with placeholders
+        createGalleryWithPlaceholders(images, folder, gallery);
+    }
+
+    function createGalleryWithPlaceholders(images, folder, gallery) {
+        // Clear and create grid immediately
+        gallery.innerHTML = '';
+        gallery.className = 'lightbox-gallery';
+        
+        // Create all placeholders first - visible immediately
         images.forEach((imageName, index) => {
             const item = document.createElement('div');
-            item.className = 'lightbox-item';
+            item.className = 'lightbox-item placeholder-active';
             
+            // Placeholder with loader - visible immediately
+            const placeholder = document.createElement('div');
+            placeholder.className = 'image-placeholder loading';
+            placeholder.innerHTML = `
+                <div class="spinner"></div>
+                <div class="loading-text">Loading...</div>
+            `;
+            
+            // Hidden image element
             const img = document.createElement('img');
-            img.src = `./gallery/${folder}/${imageName}`;
+            img.style.display = 'none';
             img.alt = imageName.replace(/\.(jpg|png|jpeg)$/i, '');
-            img.loading = 'lazy';
             
             const title = document.createElement('div');
             title.className = 'lightbox-item-title';
             title.textContent = imageName.replace(/\.(jpg|png|jpeg)$/i, '');
             
-            // Add click event for zoom
-            item.addEventListener('click', function() {
-                openImageZoom(img.src, title.textContent);
-            });
-            
+            item.appendChild(placeholder);
             item.appendChild(img);
             item.appendChild(title);
             gallery.appendChild(item);
+            
+            // Start loading image after placeholder is visible
+            setTimeout(() => {
+                loadImageForItem(img, placeholder, item, folder, imageName);
+            }, index * 50); // Stagger loading for smoother experience
         });
-        
-        modal.style.display = 'block';
-        document.body.style.overflow = 'hidden';
     }
 
-    function closeGalleryLightbox(category) {
-        const modal = document.getElementById(category + '-modal');
-        modal.style.display = 'none';
-        document.body.style.overflow = 'auto';
+    function loadImageForItem(img, placeholder, item, folder, imageName) {
+        img.onload = function() {
+            // Hide placeholder, show image
+            placeholder.style.display = 'none';
+            img.style.display = 'block';
+            img.style.opacity = '0';
+            
+            // Fade in image
+            setTimeout(() => {
+                img.style.opacity = '1';
+                item.classList.remove('placeholder-active');
+                item.classList.add('image-loaded');
+            }, 50);
+            
+            // Add click event when image is loaded
+            item.addEventListener('click', function() {
+                openImageZoom(img.src, imageName.replace(/\.(jpg|png|jpeg)$/i, ''));
+            });
+        };
+        
+        img.onerror = function() {
+            placeholder.innerHTML = `
+                <i class="fas fa-exclamation-triangle"></i>
+                <div class="error-text">Failed to load</div>
+            `;
+            placeholder.classList.add('error');
+        };
+        
+        // Start loading
+        img.src = `./gallery/${folder}/${imageName}`;
     }
 
     // Image zoom functions
@@ -109,7 +155,21 @@ const Gallery = (function() {
         const zoomedTitle = document.getElementById('zoomed-title');
         const currentImage = currentImageArray[currentImageIndex];
         
-        // Create new image to get natural dimensions
+        // Show loading state for zoom
+        const imageContainer = zoomedImage.parentElement;
+        let loader = imageContainer.querySelector('.zoom-loader');
+        
+        if (!loader) {
+            loader = document.createElement('div');
+            loader.className = 'zoom-loader';
+            loader.innerHTML = '<div class="spinner"></div>';
+            imageContainer.appendChild(loader);
+        }
+        
+        loader.style.display = 'flex';
+        zoomedImage.style.opacity = '0.3';
+        
+        // Create new image to get natural dimensions and preload
         const tempImg = new Image();
         tempImg.onload = function() {
             // Set the source
@@ -143,6 +203,18 @@ const Gallery = (function() {
             zoomedImage.style.height = finalHeight + 'px';
             zoomedImage.style.maxWidth = 'none';
             zoomedImage.style.maxHeight = 'none';
+            
+            // Hide loader and show image
+            setTimeout(() => {
+                loader.style.display = 'none';
+                zoomedImage.style.opacity = '1';
+            }, 100);
+        };
+        
+        tempImg.onerror = function() {
+            loader.style.display = 'none';
+            zoomedImage.style.opacity = '1';
+            zoomedTitle.textContent = 'Failed to load image';
         };
         
         tempImg.src = `./gallery/${currentImageFolder}/${currentImage}`;
