@@ -12,31 +12,31 @@ function closeGalleryLightbox(category) {
 const Gallery = (function() {
     // Gallery image arrays
     const luxuryBathwareImages = [
-        'ACM2902409005A.jpg', 'ACM3402409004A.jpg', 'ACM3502409001B.jpg', 'ACM4502409003A.jpg',
-        'ACS322001.jpg', 'ACS322002.jpg', 'ACS322003.jpg', 'ACS322004-1.jpg', 'ACS322005.jpg',
-        'AH17005 - right corner view.jpg', 'AH17005 - side view.jpg', 'AH17005 - vertical view.jpg',
-        'AH17005-vertical right view .jpg', 'AH17005B -side view.jpg', 'AH17005B -vertical view .jpg',
-        'AH17005L -vertical view.jpg', 'AH17005L-right vertical view .jpg', 'AH17005L-side view.jpg',
-        'AH17005R-vertical view.jpg', 'AH17006 - side view.jpg', 'AH17006-left side view.jpg',
-        'AH17006-right side view.jpg', 'AH17006-vertical view.jpg', 'AH17006B - side view.jpg',
-        'AH17006B-vertical view.jpg', 'AH17006L - side view.jpg', 'AH17006L-left side view .jpg',
-        'AH17006L-vertical view .jpg', 'AH17008 side view.jpg', 'AH17008-half vertical view .jpg',
-        'AH17008-right part view.jpg', 'AH17008-right view.jpg', 'AH17008-side view.jpg',
-        'AH17008-vertical view.jpg', 'AH17008B-15 half vertical view.jpg', 'AH17008B-15 left side view.jpg',
-        'AH17008B-15L side view.jpg', 'AH17008B-vertical view.jpg', 'AH17008WB side view.jpg',
-        'AH17008WB vertical view .jpg', 'AH17008WR Right side view.jpg', 'AH17008WR side view.jpg',
-        'AH17008WR vertical view.jpg'
+    'ACM2902409005A.jpg', 'ACM3402409004A.jpg', 'ACM3502409001B.jpg', 'ACM4502409003A.jpg',
+    'ACS322001.jpg', 'ACS322002.jpg', 'ACS322003.jpg', 'ACS322004-1.jpg', 'ACS322005.jpg',
+    'AH17005_-_right_corner_view.jpg', 'AH17005_-_side_view.jpg', 'AH17005_-_vertical_view.jpg',
+    'AH17005-vertical_right_view_.jpg', 'AH17005B_-side_view.jpg', 'AH17005B_-vertical_view_.jpg',
+    'AH17005L_-vertical_view.jpg', 'AH17005L-right_vertical_view_.jpg', 'AH17005L-side_view.jpg',
+    'AH17005R-vertical_view.jpg', 'AH17006_-_side_view.jpg', 'AH17006-left_side_view.jpg',
+    'AH17006-right_side_view.jpg', 'AH17006-vertical_view.jpg', 'AH17006B_-_side_view.jpg',
+    'AH17006B-vertical_view.jpg', 'AH17006L_-_side_view.jpg', 'AH17006L-left_side_view_.jpg',
+    'AH17006L-vertical_view_.jpg', 'AH17008_side_view.jpg', 'AH17008-half_vertical_view_.jpg',
+    'AH17008-right_part_view.jpg', 'AH17008-right_view.jpg', 'AH17008-side_view.jpg',
+    'AH17008-vertical_view.jpg', 'AH17008B-15_half_vertical_view.jpg', 'AH17008B-15_left_side_view.jpg',
+    'AH17008B-15L_side_view.jpg', 'AH17008B-vertical_view.jpg', 'AH17008WB_side_view.jpg',
+    'AH17008WB_vertical_view_.jpg', 'AH17008WR_Right_side_view.jpg', 'AH17008WR_side_view.jpg',
+    'AH17008WR_vertical_view.jpg'
     ];
 
     const premiumTilesImages = [
-        'ACM3502409001A-1.png', 'ACM3502409001B-1.png', 'ACM3502409001C-1.png', 'ACS322001 (2).jpg',
-        'ACS322004A.jpg', 'Armani- DK Grey.jpg', 'Armani-Bianco.jpg', 'Armani-Grey.jpg', 'Armani-LT Grey.jpg',
-        'LAURA BEIGE- ACT311060 .jpg', 'LAURA BIANCO ACT310060.jpg', 'LAURA SILVER - ACT312060.jpg',
-        'NF126910ML5.jpg', 'S12P80 Patrick Ivory.jpg', 'S12P81 Patrick Beige.jpg', 'S12P82 Patrick Charcoal.jpg',
-        'S12P90 Patrick Ivory.jpg', 'S12P91 Patrick Beige.jpg', 'S12P92 Patrick Charcoal.jpg',
-        'SAVAN -AC060315-E LT GREY.JPG', 'SAVAN EXTERNAL ACT315126  LT GREY.JPG',
-        'SAVAN EXTERNAL ACT316126  GREY.jpg', 'SAVAN EXTERNAL ACT317126 DK GREY.jpg',
-        'SAVAN-AC060316-E GREY.jpg', 'SAVAN-AC060317-E DK GREY.jpg'
+    'ACM3502409001A-1.png', 'ACM3502409001B-1.png', 'ACM3502409001C-1.png', 'ACS322001_(2).jpg',
+    'ACS322004A.jpg', 'Armani-_DK_Grey.jpg', 'Armani-Bianco.jpg', 'Armani-Grey.jpg', 'Armani-LT_Grey.jpg',
+    'LAURA_BEIGE-_ACT311060_.jpg', 'LAURA_BIANCO_ACT310060.jpg', 'LAURA_SILVER_-_ACT312060.jpg',
+    'NF126910ML5.jpg', 'S12P80_Patrick_Ivory.jpg', 'S12P81_Patrick_Beige.jpg', 'S12P82_Patrick_Charcoal.jpg',
+    'S12P90_Patrick_Ivory.jpg', 'S12P91_Patrick_Beige.jpg', 'S12P92_Patrick_Charcoal.jpg',
+    'SAVAN_-AC060315-E_LT_GREY.JPG', 'SAVAN_EXTERNAL_ACT315126__LT_GREY.JPG',
+    'SAVAN_EXTERNAL_ACT316126__GREY.jpg', 'SAVAN_EXTERNAL_ACT317126_DK_GREY.jpg',
+    'SAVAN-AC060316-E_GREY.jpg', 'SAVAN-AC060317-E_DK_GREY.jpg'
     ];
 
     // Gallery lightbox variables
