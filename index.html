@@ -1,4 +1,4 @@
-/* Downloads */<!DOCTYPE html>
+/* Gallery */			/* Downloads */<!DOCTYPE html>
 <html lang="en">
 	<head>
 		<meta charset="utf-8">
@@ -7,7 +7,7 @@
 		<meta name="description" content="Premium home finishing materials, bathroom tiles, and luxury bathtubs">
 		<meta name="author" content="All4Homee">
 		
-		<title class="cinzel-decorative">Newbridge Tile & Bath Wares - Premium Home Finishing Materials</title>
+		<title>Newbridge Tile & Bath Wares - Premium Home Finishing Materials</title>
 		<!-- Bootstrap core CSS -->
 		<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
 		<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -216,7 +216,197 @@
 				color: #333;
 			}
 			
-			/* Gallery */
+			/* Gallery Categories */
+			.gallery-category {
+				background: white;
+				border-radius: 15px;
+				padding: 2rem;
+				text-align: center;
+				transition: all 0.3s ease;
+				box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+				cursor: pointer;
+				height: 100%;
+			}
+			
+			.gallery-category:hover {
+				transform: translateY(-5px);
+				box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+			}
+			
+			.gallery-category-icon {
+				font-size: 4rem;
+				color: #667eea;
+				margin-bottom: 1.5rem;
+			}
+			
+			.gallery-category h3 {
+				font-size: 1.5rem;
+				font-weight: 600;
+				margin-bottom: 1rem;
+				color: #333;
+			}
+			
+			/* Lightbox Modal */
+			.lightbox-modal {
+				display: none;
+				position: fixed;
+				z-index: 9999;
+				left: 0;
+				top: 0;
+				width: 100%;
+				height: 100%;
+				background-color: rgba(0,0,0,0.9);
+			}
+			
+			.lightbox-content {
+				position: relative;
+				margin: auto;
+				padding: 0;
+				width: 90%;
+				max-width: 1200px;
+				height: 90%;
+				overflow-y: auto;
+				margin-top: 5%;
+			}
+			
+			.lightbox-header {
+				background: white;
+				padding: 1rem 2rem;
+				border-radius: 15px 15px 0 0;
+				position: sticky;
+				top: 0;
+				z-index: 10;
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+			}
+			
+			.lightbox-header h3 {
+				margin: 0;
+				color: #333;
+			}
+			
+			.lightbox-close {
+				color: #aaa;
+				font-size: 28px;
+				font-weight: bold;
+				cursor: pointer;
+				border: none;
+				background: none;
+			}
+			
+			.lightbox-close:hover {
+				color: #000;
+			}
+			
+			.lightbox-gallery {
+				background: white;
+				padding: 2rem;
+				border-radius: 0 0 15px 15px;
+				display: grid;
+				grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+				gap: 1.5rem;
+			}
+			
+			.lightbox-item {
+				position: relative;
+				border-radius: 10px;
+				overflow: hidden;
+				box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+				transition: transform 0.3s ease;
+				cursor: pointer;
+			}
+			
+			.lightbox-item:hover {
+				transform: scale(1.05);
+			}
+			
+			.lightbox-item img {
+				width: 100%;
+				height: 200px;
+				object-fit: cover;
+			}
+			
+			.lightbox-item-title {
+				position: absolute;
+				bottom: 0;
+				left: 0;
+				right: 0;
+				background: linear-gradient(transparent, rgba(0,0,0,0.8));
+				color: white;
+				padding: 1rem 0.5rem 0.5rem;
+				font-size: 0.8rem;
+				font-weight: 500;
+				text-align: center;
+			}
+			
+			/* Image Zoom Modal */
+			.image-zoom-modal {
+				display: none;
+				position: fixed;
+				z-index: 99999;
+				left: 0;
+				top: 0;
+				width: 100%;
+				height: 100%;
+				background-color: rgba(0,0,0,0.95);
+				cursor: pointer;
+			}
+			
+			.image-zoom-content {
+				position: absolute;
+				top: 50%;
+				left: 50%;
+				transform: translate(-50%, -50%);
+				max-width: 95%;
+				max-height: 95%;
+				border-radius: 10px;
+				box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+			}
+			
+			.image-zoom-content img {
+				width: 100%;
+				height: 100%;
+				object-fit: contain;
+				border-radius: 10px;
+			}
+			
+			.image-zoom-close {
+				position: absolute;
+				top: 15px;
+				right: 20px;
+				color: white;
+				font-size: 40px;
+				font-weight: bold;
+				cursor: pointer;
+				z-index: 100000;
+				background: rgba(0,0,0,0.5);
+				border-radius: 50%;
+				width: 50px;
+				height: 50px;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				border: none;
+			}
+			
+			.image-zoom-close:hover {
+				background: rgba(0,0,0,0.8);
+			}
+			
+			.image-zoom-title {
+				position: absolute;
+				bottom: 0;
+				left: 0;
+				right: 0;
+				background: linear-gradient(transparent, rgba(0,0,0,0.8));
+				color: white;
+				padding: 2rem 1rem 1rem;
+				text-align: center;
+				font-size: 1.1rem;
+				font-weight: 500;
+				border-radius: 0 0 10px 10px;
+			}
 			.gallery-item {
 				position: relative;
 				overflow: hidden;
@@ -459,7 +649,7 @@
 						<div class="feature-box">
 							<i class="fas fa-th-large"></i>
 							<h3>Premium Tiles</h3>
-							<p>Extensive collection of porcelain, ceramic, mosaics, and natural stone finishes. From contemporary concrete looks to elegant marble textures.</p>
+							<p>Extensive collection of porcelain tiles, mosaics, and natural stone finishes. From contemporary concrete looks to elegant marble textures.</p>
 						</div>
 					</div>
 					<div class="col-md-4">
@@ -480,7 +670,7 @@
 				<div class="row mt-5">
 					<div class="col-lg-8 mx-auto">
 						<div class="text-center">
-							<h4 class="mb-4">Why Choose Newbridge Tile & Bath Wares?</h4>
+							<h4 class="mb-4 cinzel-decorative">About Newbridge Tile & Bath Wares</h4>
 							<p class="lead">At Newbridge Tile & Bath Wares Pty Ltd, we're passionate about helping you create beautiful, functional spaces. With our extensive warehouse at 349 Newbridge Road, Moorebank and expert team, we provide everything you need for your home finishing projects. From the latest European tile trends to luxury bathroom fixtures, we source the finest materials to bring your vision to life.</p>
 						</div>
 					</div>
@@ -493,61 +683,70 @@
 			<div class="container">
 				<div class="section-title">
 					<h2 class="cinzel-decorative">Product Gallery</h2>
-					<p>Explore our curated collection of premium tiles, fixtures, and finishes</p>
+					<p>Explore our curated collections of premium products</p>
 				</div>
 				<div class="row g-4">
 					<div class="col-md-6">
-						<div class="gallery-item">
-							<img src="./gallery/IMG_16E9124D0A78-1.jpeg" alt="Luxury Bathtub Design">
-							<div class="gallery-overlay">
-								<span>Luxury Bathtub Collection</span>
+						<div class="gallery-category" onclick="openLightbox('luxury-bathware')">
+							<div class="gallery-category-icon">
+								<i class="fas fa-bath"></i>
+							</div>
+							<h3>Luxury Bathware</h3>
+							<p>Premium bathtubs, elegant fixtures, and sophisticated bathroom accessories crafted for the ultimate luxury experience.</p>
+							<div class="btn btn-primary-custom mt-3">
+								<i class="fas fa-images me-2"></i>View Gallery
 							</div>
 						</div>
 					</div>
 					<div class="col-md-6">
-						<div class="gallery-item">
-							<img src="./gallery/IMG_179BBB51FF8D-1.jpeg" alt="Premium Bathroom Tiles">
-							<div class="gallery-overlay">
-								<span>Premium Bathroom Tiles</span>
+						<div class="gallery-category" onclick="openLightbox('premium-tiles')">
+							<div class="gallery-category-icon">
+								<i class="fas fa-th-large"></i>
 							</div>
-						</div>
-					</div>
-					<div class="col-md-6">
-						<div class="gallery-item">
-							<img src="./gallery/IMG_997589F573F8-1.jpeg" alt="Modern Bathroom Interior">
-							<div class="gallery-overlay">
-								<span>Modern Bathroom Design</span>
+							<h3>Premium, Porcelain, Marbles And Ceramic</h3>
+							<p>Exquisite collection of porcelain tiles, natural marbles, and premium ceramic finishes for sophisticated interiors.</p>
+							<div class="btn btn-primary-custom mt-3">
+								<i class="fas fa-images me-2"></i>View Gallery
 							</div>
-						</div>
-					</div>
-					<div class="col-md-6">
-						<div class="gallery-item">
-							<img src="./gallery/IMG_CAB73B018DBF-1.jpeg" alt="Elegant Bathroom Setup">
-							<div class="gallery-overlay">
-								<span>Elegant Bathroom Setup</span>
-							</div>
-						</div>
-					</div>
-				</div>
-				<div class="text-center mt-5">
-					<p class="lead">Featuring products from leading brands including:</p>
-					<div class="row">
-						<div class="col-md-4">
-							<h5><i class="fas fa-gem me-2 text-primary"></i>Travertino Collection</h5>
-							<p>Natural marble-inspired designs</p>
-						</div>
-						<div class="col-md-4">
-							<h5><i class="fas fa-gem me-2 text-primary"></i>Saven Series</h5>
-							<p>Contemporary concrete textures</p>
-						</div>
-						<div class="col-md-4">
-							<h5><i class="fas fa-gem me-2 text-primary"></i>Bulgaria Range</h5>
-							<p>Realistic marble patterns</p>
 						</div>
 					</div>
 				</div>
 			</div>
 		</section>
+
+		<!-- Lightbox Modals -->
+		<div id="luxury-bathware-modal" class="lightbox-modal">
+			<div class="lightbox-content">
+				<div class="lightbox-header">
+					<h3 class="cinzel-decorative">Luxury Bathware Collection</h3>
+					<button class="lightbox-close" onclick="closeLightbox('luxury-bathware')">&times;</button>
+				</div>
+				<div class="lightbox-gallery" id="luxury-bathware-gallery">
+					<!-- Luxury Bathware Images -->
+				</div>
+			</div>
+		</div>
+
+		<div id="premium-tiles-modal" class="lightbox-modal">
+			<div class="lightbox-content">
+				<div class="lightbox-header">
+					<h3 class="cinzel-decorative">Premium, Porcelain, Marbles And Ceramic</h3>
+					<button class="lightbox-close" onclick="closeLightbox('premium-tiles')">&times;</button>
+				</div>
+				<div class="lightbox-gallery" id="premium-tiles-gallery">
+					<!-- Premium Tiles Images -->
+				</div>
+			</div>
+		</div>
+
+		<!-- Image Zoom Modal -->
+		<div id="image-zoom-modal" class="image-zoom-modal">
+			<button class="image-zoom-close" onclick="closeImageZoom()">&times;</button>
+			<div class="image-zoom-content">
+				<img id="zoomed-image" src="" alt="">
+				<div class="image-zoom-title" id="zoomed-title"></div>
+			</div>
+		</div>
 
 		<!-- Our Sales Team Section -->
 		<section id="sales-team" class="section">
@@ -729,6 +928,107 @@
 		<!-- Scripts -->
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 		<script>
+			// Gallery Lightbox Functions
+			const luxuryBathwareImages = [
+				'ACM2902409005A.jpg', 'ACM3402409004A.jpg', 'ACM3502409001B.jpg', 'ACM4502409003A.jpg',
+				'ACS322001.jpg', 'ACS322002.jpg', 'ACS322003.jpg', 'ACS322004-1.jpg', 'ACS322005.jpg',
+				'AH17005 - right corner view.jpg', 'AH17005 - side view.jpg', 'AH17005 - vertical view.jpg',
+				'AH17005-vertical right view .jpg', 'AH17005B -side view.jpg', 'AH17005B -vertical view .jpg',
+				'AH17005L -vertical view.jpg', 'AH17005L-right vertical view .jpg', 'AH17005L-side view.jpg',
+				'AH17005R-vertical view.jpg', 'AH17006 - side view.jpg', 'AH17006-left side view.jpg',
+				'AH17006-right side view.jpg', 'AH17006-vertical view.jpg', 'AH17006B - side view.jpg',
+				'AH17006B-vertical view.jpg', 'AH17006L - side view.jpg', 'AH17006L-left side view .jpg',
+				'AH17006L-vertical view .jpg', 'AH17008 side view.jpg', 'AH17008-half vertical view .jpg',
+				'AH17008-right part view.jpg', 'AH17008-right view.jpg', 'AH17008-side view.jpg',
+				'AH17008-vertical view.jpg', 'AH17008B-15 half vertical view.jpg', 'AH17008B-15 left side view.jpg',
+				'AH17008B-15L side view.jpg', 'AH17008B-vertical view.jpg', 'AH17008WB side view.jpg',
+				'AH17008WB vertical view .jpg', 'AH17008WR Right side view.jpg', 'AH17008WR side view.jpg',
+				'AH17008WR vertical view.jpg'
+			];
+
+			const premiumTilesImages = [
+				'ACM3502409001A-1.png', 'ACM3502409001B-1.png', 'ACM3502409001C-1.png', 'ACS322001 (2).jpg',
+				'ACS322004A.jpg', 'Armani- DK Grey.jpg', 'Armani-Bianco.jpg', 'Armani-Grey.jpg', 'Armani-LT Grey.jpg',
+				'LAURA BEIGE- ACT311060 .jpg', 'LAURA BIANCO ACT310060.jpg', 'LAURA SILVER - ACT312060.jpg',
+				'NF126910ML5.jpg', 'S12P80 Patrick Ivory.jpg', 'S12P81 Patrick Beige.jpg', 'S12P82 Patrick Charcoal.jpg',
+				'S12P90 Patrick Ivory.jpg', 'S12P91 Patrick Beige.jpg', 'S12P92 Patrick Charcoal.jpg',
+				'SAVAN -AC060315-E LT GREY.JPG', 'SAVAN EXTERNAL ACT315126  LT GREY.JPG',
+				'SAVAN EXTERNAL ACT316126  GREY.jpg', 'SAVAN EXTERNAL ACT317126 DK GREY.jpg',
+				'SAVAN-AC060316-E GREY.jpg', 'SAVAN-AC060317-E DK GREY.jpg'
+			];
+
+			function openLightbox(category) {
+				const modal = document.getElementById(category + '-modal');
+				const gallery = document.getElementById(category + '-gallery');
+				
+				// Clear existing content
+				gallery.innerHTML = '';
+				
+				// Get images for the category
+				const images = category === 'luxury-bathware' ? luxuryBathwareImages : premiumTilesImages;
+				const folder = category === 'luxury-bathware' ? 'luxury_bathware' : 'premium_porcelain_marbles_and_ceramic';
+				
+				// Create gallery items
+				images.forEach(imageName => {
+					const item = document.createElement('div');
+					item.className = 'lightbox-item';
+					
+					const img = document.createElement('img');
+					img.src = `./gallery/${folder}/${imageName}`;
+					img.alt = imageName.replace(/\.(jpg|png|jpeg)$/i, '');
+					img.loading = 'lazy';
+					
+					const title = document.createElement('div');
+					title.className = 'lightbox-item-title';
+					title.textContent = imageName.replace(/\.(jpg|png|jpeg)$/i, '');
+					
+					// Add click event for zoom
+					item.addEventListener('click', function() {
+						openImageZoom(img.src, title.textContent);
+					});
+					
+					item.appendChild(img);
+					item.appendChild(title);
+					gallery.appendChild(item);
+				});
+				
+				modal.style.display = 'block';
+				document.body.style.overflow = 'hidden';
+			}
+
+			function closeLightbox(category) {
+				const modal = document.getElementById(category + '-modal');
+				modal.style.display = 'none';
+				document.body.style.overflow = 'auto';
+			}
+
+			// Image zoom functions
+			function openImageZoom(imageSrc, imageTitle) {
+				const modal = document.getElementById('image-zoom-modal');
+				const zoomedImage = document.getElementById('zoomed-image');
+				const zoomedTitle = document.getElementById('zoomed-title');
+				
+				zoomedImage.src = imageSrc;
+				zoomedTitle.textContent = imageTitle;
+				modal.style.display = 'block';
+			}
+
+			function closeImageZoom() {
+				const modal = document.getElementById('image-zoom-modal');
+				modal.style.display = 'none';
+			}
+
+			// Close modal when clicking outside
+			window.onclick = function(event) {
+				if (event.target.classList.contains('lightbox-modal')) {
+					event.target.style.display = 'none';
+					document.body.style.overflow = 'auto';
+				}
+				if (event.target.classList.contains('image-zoom-modal')) {
+					closeImageZoom();
+				}
+			}
+
 			// Background image slider
 			const images = document.querySelectorAll('.background-slider img');
 			let currentImageIndex = 0;
