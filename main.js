@@ -230,12 +230,22 @@ body {
     color: #333;
 }
 
-/* Improved Loading Animations */
-.spinner {
+/* Loading Animations */
+.loader {
     width: 40px;
     height: 40px;
     border: 4px solid #f3f3f3;
     border-top: 4px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+}
+
+.placeholder-loader {
+    width: 30px;
+    height: 30px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #667eea;
     border-radius: 50%;
     animation: spin 1s linear infinite;
     margin: 0 auto;
@@ -246,77 +256,83 @@ body {
     100% { transform: rotate(360deg); }
 }
 
-/* Gallery immediate placeholders */
-.lightbox-gallery {
-    background: white;
-    padding: 2rem;
-    border-radius: 0 0 15px 15px;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 1.5rem;
-}
-
-.lightbox-item.placeholder-active {
-    position: relative;
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    height: 280px; /* Fixed height for consistent layout */
-}
-
-.lightbox-item.image-loaded {
-    cursor: pointer;
-    transition: transform 0.3s ease;
-}
-
-.lightbox-item.image-loaded:hover {
-    transform: scale(1.05);
-}
-
-.image-placeholder.loading {
+.gallery-loading {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    width: 100%;
-    height: 200px;
-    background: #f8f9fa;
-    color: #6c757d;
-    border-radius: 10px 10px 0 0;
+    padding: 3rem;
+    text-align: center;
+    color: #666;
 }
 
-.image-placeholder.error {
+.gallery-loading p {
+    margin: 1rem 0 0.5rem;
+    font-size: 1.1rem;
+}
+
+.progress-bar {
+    width: 200px;
+    height: 4px;
+    background: #e9ecef;
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 1rem;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 2px;
+    transition: width 0.3s ease;
+}
+
+.lightbox-gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.5rem;
+    padding: 2rem;
+    background: white;
+    border-radius: 0 0 15px 15px;
+}
+
+.lightbox-gallery-grid.fade-in {
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Loading states for gallery items */
+.lightbox-item.loading {
+    position: relative;
+}
+
+.lightbox-item.loading .image-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8f9fa;
+    border-radius: 10px;
+}
+
+.lightbox-item.loading img {
+    opacity: 0;
+}
+
+.lightbox-item.loaded img {
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+.lightbox-item.error .image-placeholder {
     background: #ffe6e6;
     color: #dc3545;
 }
 
-.loading-text, .error-text {
-    margin-top: 10px;
-    font-size: 0.9rem;
-    font-weight: 500;
-}
-
-.lightbox-item img {
-    width: 100%;
-    height: 200px;
-    object-fit: cover;
-    transition: opacity 0.3s ease;
-}
-
-.lightbox-item-title {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: linear-gradient(transparent, rgba(0,0,0,0.8));
-    color: white;
-    padding: 1rem 0.5rem 0.5rem;
-    font-size: 0.8rem;
-    font-weight: 500;
-    text-align: center;
-}
-
-/* Zoom modal loader */
+/* Zoom loader */
 .zoom-loader {
     position: absolute;
     top: 50%;
@@ -331,7 +347,7 @@ body {
     z-index: 100002;
 }
 
-.zoom-loader .spinner {
+.zoom-loader .loader {
     border-color: #f3f3f3;
     border-top-color: #667eea;
 }
