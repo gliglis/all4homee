@@ -627,3 +627,66 @@ window.closeGalleryLightbox = Gallery.closeGalleryLightbox;
 window.nextImage = Gallery.nextImage;
 window.previousImage = Gallery.previousImage;
 window.closeImageZoom = Gallery.closeImageZoom;
+
+// ============ KEYBOARD & TOUCH NAVIGATION FOR ZOOM MODAL ============
+(function () {
+    function zoomModalIsOpen() {
+        const modal = document.getElementById('image-zoom-modal');
+        return modal && modal.style.display === 'block';
+    }
+
+    // --- Keyboard: left/right arrows navigate, Escape closes ---
+    document.addEventListener('keydown', function (e) {
+        if (!zoomModalIsOpen()) return;
+
+        if (e.key === 'ArrowRight') {
+            e.preventDefault();
+            Gallery.nextImage();
+        } else if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            Gallery.previousImage();
+        } else if (e.key === 'Escape') {
+            e.preventDefault();
+            Gallery.closeImageZoom();
+        }
+    });
+
+    // --- Touch: swipe left/right to change image ---
+    const zoomMain = document.querySelector('.image-zoom-main');
+    if (zoomMain) {
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let touchStartTime = 0;
+
+        zoomMain.addEventListener('touchstart', function (e) {
+            const t = e.changedTouches[0];
+            touchStartX = t.screenX;
+            touchStartY = t.screenY;
+            touchStartTime = Date.now();
+        }, { passive: true });
+
+        zoomMain.addEventListener('touchend', function (e) {
+            if (!zoomModalIsOpen()) return;
+
+            const t = e.changedTouches[0];
+            const dx = t.screenX - touchStartX;
+            const dy = t.screenY - touchStartY;
+            const elapsed = Date.now() - touchStartTime;
+
+            // Only treat as swipe: mostly horizontal, long enough, and reasonably quick
+            const MIN_DISTANCE = 50;   // px
+            const MAX_OFF_AXIS = 80;   // px vertical tolerance
+            const MAX_TIME = 800;      // ms
+
+            if (Math.abs(dx) >= MIN_DISTANCE &&
+                Math.abs(dy) <= MAX_OFF_AXIS &&
+                elapsed <= MAX_TIME) {
+                if (dx < 0) {
+                    Gallery.nextImage();      // swipe left -> next
+                } else {
+                    Gallery.previousImage();  // swipe right -> previous
+                }
+            }
+        }, { passive: true });
+    }
+})();
