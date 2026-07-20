@@ -261,7 +261,7 @@ body {
     border-radius: 10px;
     overflow: hidden;
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    height: 280px; /* Fixed height for consistent layout */
+    height: 200px; /* Match loaded image height to avoid layout shift */
 }
 
 .lightbox-item.image-loaded {
@@ -820,5 +820,69 @@ body {
     .image-zoom-title {
         font-size: 1rem;
         padding: 12px 15px;
+    }
+
+    /* --- Gallery cards --- */
+    .gallery-category {
+        padding: 1.5rem;
+    }
+
+    /* --- Lightbox modal on tablets/phones --- */
+    .lightbox-content {
+        width: 100%;
+        height: 100%;
+        max-width: 100%;
+        margin-top: 0;
+        border-radius: 0;
+    }
+
+    .lightbox-header {
+        padding: 1rem;
+        border-radius: 0;
+    }
+
+    .lightbox-header h3 {
+        font-size: 1.2rem;
+    }
+
+    .lightbox-gallery {
+        padding: 1rem;
+        gap: 1rem;
+        grid-template-columns: repeat(2, 1fr);
+        border-radius: 0;
+    }
+
+    .lightbox-item img,
+    .lightbox-item.placeholder-active,
+    .image-placeholder.loading {
+        height: 150px;
+    }
+
+    /* Disable hover-zoom on touch to avoid stuck scaled images */
+    .lightbox-item:hover img,
+    .lightbox-item.image-loaded:hover {
+        transform: none;
+    }
+}
+
+/* --- Very small phones --- */
+@media (max-width: 480px) {
+    .lightbox-gallery {
+        grid-template-columns: 1fr;
+        padding: 0.75rem;
+    }
+
+    .lightbox-item img,
+    .lightbox-item.placeholder-active,
+    .image-placeholder.loading {
+        height: 220px;
+    }
+
+    .lightbox-item-title {
+        font-size: 0.9rem;
+    }
+
+    .gallery-category {
+        padding: 1.25rem;
     }
 }
