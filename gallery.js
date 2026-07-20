@@ -141,6 +141,8 @@ const Gallery = (function() {
             // Hidden image element
             const img = document.createElement('img');
             img.style.display = 'none';
+            img.loading = 'lazy';
+            img.decoding = 'async';
             img.alt = imageName.replace(/\.(jpg|png|jpeg)$/i, '');
 
             const title = document.createElement('div');
